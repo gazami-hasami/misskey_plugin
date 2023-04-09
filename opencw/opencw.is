@@ -1,0 +1,33 @@
+/// @0.12.4
+
+### {
+  name: 'チャンネル内のCW自動解除'
+  version: '1.0'
+  author: '@piga@misskey.io'
+  description: '指定したチャンネル内に表示されるノートのCWを自動で解除します。'
+  config: {
+    target_ch_ids: {
+      type: 'string'
+      label: 'チャンネルID'
+      description: '複数指定する場合は半角スペースで区切ってね'
+    }
+    not_open_len: {
+      type: 'number'
+      label: 'CWを開かない文字数'
+      description: 'この数値より文字数が多いとCWは開きません。半角数字で指定してね'
+      default: 200
+    }
+   }
+}
+
+let targets = Plugin:config.target_ch_ids.split(' ')
+
+Plugin:register_note_view_interruptor(@(note) {
+  if targets.incl(note.channelId) {
+    if (note.cw != null) && (note.channelId != null) && (note.text.len < Plugin:config.not_open_len) {
+      note.text = `{note.cw}  [CW]{Str:lf}{note.text}`
+      note.cw = null
+    }
+  }
+  return note
+})
