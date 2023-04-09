@@ -2,7 +2,7 @@
 
 ### {
   name: 'チャンネル投稿ボタン追加'
-  version: '1.0'
+  version: '1.1'
   author: '@piga@misskey.io'
   description: '投稿フォームにチャンネルへ投稿するボタンを追加します。'
   permissions: ["read:channels"]
@@ -73,12 +73,12 @@ each(let i, channels) {
  
   Plugin:register_post_form_action(`{i.name} へ投稿`, @(form update) {
     switch_destination(i.id)
-    Mk:dialog('' `:blobmail:投稿先を📺[{i.name}]に変更したよ`)
+    Mk:dialog('' `投稿先を📺[{i.name}]に変更したよ`)
   }) 
 }
 Plugin:register_post_form_action(`タイムラインへ投稿`, @(form update) {
   switch_destination('')
-  Mk:dialog('' `:blobmail:投稿先を🌐タイムラインに変更したよ`)
+  Mk:dialog('' `投稿先を🌐タイムラインに変更したよ`)
 })
 
 // 投稿時に投稿先のチャンネルIDを書き換える  
