@@ -1,0 +1,88 @@
+/// @ 0.12.4
+
+### {
+  name: 'チャンネル投稿ボタン追加'
+  version: '1.0'
+  author: '@piga@misskey.io'
+  description: '投稿フォームにチャンネルへ投稿するボタンを追加します。'
+  permissions: ["read:channels"]
+  config: {
+    limit: {
+      type: 'number'
+      label: '取得するチャンネル数の上限'
+      description: 'フォローしているチャンネルが増えたら変更してね'
+      default: 30
+    }
+  }
+}
+
+var CH_ARR = []
+
+// objのnullなプロパティを再帰的に除去 https://qiita.com/saki-lere/items/851c4500d56659d15c9c
+@remove_null_property(object) {
+  if Core:type(object) != 'obj' {
+    return object
+  }
+  let new_obj = {}
+  each let kv Obj:kvs(object) {
+    let v = remove_null_property(kv[1])
+    if Core:type(v) != 'null' {
+      Obj:set(new_obj kv[0] v)
+    }
+  }
+  return new_obj
+}
+
+// 投稿先をidのチャンネルへ切り替える
+@switch_destination(id) {
+  var new_arr = []
+
+  each(let i, CH_ARR) {
+    if i.id == id { i.is_post = true }
+    else { i.is_post = false }
+    new_arr.push(i)
+  }
+  CH_ARR = new_arr
+}
+
+// 投稿先のチャンネルIDを取得
+@get_destination_id() {
+  var r_id = null
+  var new_arr = []
+
+  each(let i, CH_ARR) {
+    if i.is_post {
+      i.is_post = false
+      r_id = i.id
+    }
+    new_arr.push(i)
+  }
+  CH_ARR = new_arr
+
+  return r_id
+}
+
+// フォロー中のチャンネルを取得し投稿フォームにボタンを作る
+let channels = Mk:api('channels/followed' {limit: Plugin:config.limit})
+each(let i, channels) {
+  let ch = {
+    id: i.id
+    is_post: false
+  }
+  CH_ARR.push(ch)
+ 
+  Plugin:register_post_form_action(`{i.name} へ投稿`, @(form update) {
+    switch_destination(i.id)
+    Mk:dialog('' `:blobmail:投稿先を📺[{i.name}]に変更したよ`)
+  }) 
+}
+Plugin:register_post_form_action(`タイムラインへ投稿`, @(form update) {
+  switch_destination('')
+  Mk:dialog('' `:blobmail:投稿先を🌐タイムラインに変更したよ`)
+})
+
+// 投稿時に投稿先のチャンネルIDを書き換える  
+Plugin:register_note_post_interruptor(@(note) {
+  note.channelId = get_destination_id()
+  return remove_null_property(note)
+})
