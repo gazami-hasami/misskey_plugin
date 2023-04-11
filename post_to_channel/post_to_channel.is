@@ -82,7 +82,10 @@ Plugin:register_post_form_action(`タイムラインへ投稿`, @(form update) {
 })
 
 // 投稿時に投稿先のチャンネルIDを書き換える
+// チャンネルの投稿フォームを使っている場合、チャンネルIDは書き換えない
 Plugin:register_note_post_interruptor(@(note) {
-  note.channelId = get_destination_id()
+  if note.channelId == null {
+    note.channelId = get_destination_id()
+  }
   return remove_null_property(note)
 })
