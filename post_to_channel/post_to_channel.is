@@ -70,18 +70,18 @@ each(let i, channels) {
     is_post: false
   }
   CH_ARR.push(ch)
- 
+
   Plugin:register_post_form_action(`{i.name} へ投稿`, @(form update) {
     switch_destination(i.id)
     Mk:dialog('' `投稿先を📺[{i.name}]に変更したよ`)
-  }) 
+  })
 }
 Plugin:register_post_form_action(`タイムラインへ投稿`, @(form update) {
   switch_destination('')
   Mk:dialog('' `投稿先を🌐タイムラインに変更したよ`)
 })
 
-// 投稿時に投稿先のチャンネルIDを書き換える  
+// 投稿時に投稿先のチャンネルIDを書き換える
 Plugin:register_note_post_interruptor(@(note) {
   note.channelId = get_destination_id()
   return remove_null_property(note)
